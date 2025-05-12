@@ -8,7 +8,7 @@ name: supabase
 
 services:
   studio:
-    image: supabase/2025.04.21-sha-173cc56
+    image: supabase/studio:2025.04.21-sha-173cc56
     restart: unless-stopped
     healthcheck:
       test:
@@ -222,7 +222,7 @@ services:
 
   # To use S3 backed storage: docker compose -f docker-compose.yml -f docker-compose.s3.yml up
   storage:
-    image: supabase/storage-api:v1.11.13
+    image: supabase/storage-api:v1.22.7
     depends_on:
       db:
         # Disable this if you are using an external Postgres database
@@ -317,7 +317,7 @@ services:
       - /home/deno/functions/main
 
   analytics:
-    image: supabase/logflare:1.4.0
+    image: supabase/logflare:1.12.0
     healthcheck:
       test: [ "CMD", "curl", "http://localhost:4000/health" ]
       timeout: 5s
