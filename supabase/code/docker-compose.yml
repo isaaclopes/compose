@@ -8,7 +8,7 @@ name: supabase
 
 services:
   studio:
-    image: supabase/studio:20241202-71e5240
+    image: supabase/2025.04.21-sha-173cc56
     restart: unless-stopped
     healthcheck:
       test:
@@ -16,7 +16,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://studio:3000/api/profile').then((r) => {if (r.status
+          "fetch('http://studio:3000/api/platform/profile').then((r) => {if (r.status
             !== 200) throw new Error(r.status)})"
         ]
       timeout: 10s
@@ -73,7 +73,7 @@ services:
       - ./volumes/api/kong.yml:/home/kong/temp.yml:ro
 
   auth:
-    image: supabase/gotrue:v2.164.0
+    image: supabase/gotrue:v2.171.0
     depends_on:
       db:
         # Disable this if you are using an external Postgres database
@@ -159,7 +159,7 @@ services:
 
 
   rest:
-    image: postgrest/postgrest:v12.2.0
+    image: postgrest/postgrest:v12.2.11
     depends_on:
       db:
         # Disable this if you are using an external Postgres database
@@ -179,7 +179,7 @@ services:
 
   realtime:
     # This container name looks inconsistent but is correct because realtime constructs tenant id by parsing the subdomain
-    image: supabase/realtime:v2.33.58
+    image: supabase/realtime:v2.34.47
     depends_on:
       db:
         # Disable this if you are using an external Postgres database
@@ -213,7 +213,7 @@ services:
       DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime'
       DB_ENC_KEY: supabaserealtime
       API_JWT_SECRET: ${JWT_SECRET}
-      SECRET_KEY_BASE: UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       ERL_AFLAGS: -proto_dist inet_tcp
       DNS_NODES: "''"
       RLIMIT_NOFILE: "10000"
@@ -279,7 +279,7 @@ services:
       - ./volumes/storage:/var/lib/storage:z
 
   meta:
-    image: supabase/postgres-meta:v0.84.2
+    image: supabase/postgres-meta:v0.88.9
     depends_on:
       db:
         # Disable this if you are using an external Postgres database
@@ -296,7 +296,7 @@ services:
       PG_META_DB_PASSWORD: ${POSTGRES_PASSWORD}
 
   functions:
-    image: supabase/edge-runtime:v1.65.3
+    image: supabase/edge-runtime:v1.67.4
     restart: unless-stopped
     depends_on:
       analytics:
@@ -357,7 +357,7 @@ services:
 
   # Comment out everything below this point if you are using an external Postgres database
   db:
-    image: supabase/postgres:15.6.1.139
+    image: supabase/postgres:15.8.1.060
     healthcheck:
       test: pg_isready -U postgres -h localhost
       interval: 5s
@@ -427,9 +427,19 @@ services:
 
   # Update the DATABASE_URL if you are using an external Postgres database
   supavisor:
-    image: supabase/supavisor:1.1.56
+    image: supabase/supavisor:2.5.1
     healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-sSfL",
+          "--head",
+          "-o",
+          "/dev/null",
+          "http://127.0.0.1:4000/api/health"
       test: curl -sSfL --head -o /dev/null "http://127.0.0.1:4000/api/health"
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -451,7 +461,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - DATABASE_URL=ecto://supabase_admin:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/_supabase
       - CLUSTER_POSTGRES=true
-      - SECRET_KEY_BASE=UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+      - SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       - VAULT_ENC_KEY=your-encryption-key-32-chars-min
       - API_JWT_SECRET=${JWT_SECRET}
       - METRICS_JWT_SECRET=${JWT_SECRET}
