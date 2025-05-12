@@ -438,7 +438,6 @@ services:
           "-o",
           "/dev/null",
           "http://127.0.0.1:4000/api/health"
-      test: curl -sSfL --head -o /dev/null "http://127.0.0.1:4000/api/health"
         ]
       interval: 10s
       timeout: 5s
